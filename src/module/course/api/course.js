@@ -34,9 +34,25 @@ export const updateCoursebase = (id, course) => {
 export const findTeachplanList = courseid => {
   return http.requestQuickGet(apiUrl + '/course/teachplan/list/' + courseid)
 }
+
+/*查询一条课程计划*/
+export const findTeachplan = courseid => {
+  return http.requestQuickGet(apiUrl + '/course/teachplan/findById/' + courseid)
+}
+
 /*添加课程计划*/
 export const addTeachplan = teachplah => {
   return http.requestPost(apiUrl + '/course/teachplan/add', teachplah)
+}
+
+/*修改课程计划*/
+export const editTeachplan = (id,teachplah) => {
+  return http.requestPut(apiUrl + '/course/teachplan/edit/'+ id, teachplah)
+}
+
+/*删除课程计划*/
+export const deleteTeachplan = (id) => {
+  return http.requestDelete(apiUrl + '/course/teachplan/delete/'+ id)
 }
 
 //保存课程图片地址到课程数据 库

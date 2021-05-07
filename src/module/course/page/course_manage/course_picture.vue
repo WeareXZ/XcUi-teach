@@ -48,13 +48,13 @@
         return new Promise((resolve,rejct)=>{
           courseApi.deleteCoursePic(this.courseid).then(res=>{
             if(res.success){
-
+              this.$message.success('删除成功');
                 //成功
-              resolve()
+              resolve();
             }else{
               this.$message.error("删除失败");
                 //失败
-              rejct()
+              rejct();
             }
 
           })
@@ -68,18 +68,38 @@
         //调用课程管理的保存图片接口，将图片信息保存到课程管理数据库course_pic中
         //从response得到新的图片文件的地址
         if(response.success){
-          let fileId = response.fileSystem.fileId;
-          courseApi.addCoursePic(this.courseid,fileId).then(res=>{
+          //let fileId = response.fileSystem.fileId;
+          let pic = response.fileSystem.filePath;
+          courseApi.addCoursePic(this.courseid,pic).then(res=>{
               if(res.success){
-                  this.$message.success("上传图片")
+                  this.$message.success("上传成功")
               }else{
-                this.$message.error(res.message)
+                this.handleError()
               }
 
           })
+        }else {
+          this.handleError()
         }
 
       },
+      //查询图片
+      list(){
+        courseApi.findCoursePicList(this.courseid).then((res) => {
+            console.log(res)
+            if(res.pic){
+              let name = '图片';
+              let url = this.imgUrl+res.pic;
+              let fileId = res.courseid;
+              console.log("url================"+url)
+              //url =  "http://www.img.xuechengzaixian.com/group1/M00/00/00/wKhlA2CTsGCAeaAHAAb9EIrivrA103.png";
+              //先清空文件列表，再将图片放入文件列表
+              this.fileList = []
+              this.fileList.push({name:name,url:url,fileId:fileId});
+            }
+           console.log(this.fileList);
+        });
+     },
       //上传失败执行的钩子方法
       handleError(err, file, fileList){
         this.$message.error('上传失败');
@@ -108,14 +128,15 @@
       //课程id
       this.courseid = this.$route.params.courseid;
       //查询课程
-      courseApi.findCoursePicList(this.courseid).then(res=>{
+      this.list()
+     /* courseApi.findCoursePicList(this.courseid).then(res=>{
           if(res && res.pic){
               let imgUrl = this.imgUrl+res.pic;
               //将图片地址设置到
             this.fileList.push({name:'pic',url:imgUrl,fileId:res.pic})
           }
 
-      })
+      })*/
       //测试调用promise方法，then中写的成功后的回调方法，
 //      this.testPromise(3).then(res=>{
 //          alert(res)

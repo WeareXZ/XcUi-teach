@@ -56,6 +56,54 @@
 
       </el-form>
     </el-dialog>
+
+    <el-dialog title="修改课程计划" :visible.sync="teachplayEditFormVisible">
+
+      <el-form ref="teachplanEditForm" :model="teachplanEditActive" label-width="140px" style="width:600px;"
+               :rules="teachplanRules">
+        <el-form-item label="上级结点">
+          <el-select v-model="teachplanEditActive.parentid" placeholder="不填表示根结点">
+            <el-option
+              v-for="item in teachplanList"
+              :key="item.id"
+              :label="item.pname"
+              :value="item.id">
+            </el-option>
+          </el-select>
+        </el-form-item>
+        <el-form-item label="章节/课时名称" prop="pname">
+          <el-input v-model="teachplanEditActive.pname" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="课程类型">
+          <el-radio-group v-model="teachplanEditActive.ptype">
+            <el-radio class="radio" label='1'>视频</el-radio>
+            <el-radio class="radio" label='2'>文档</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item label="学习时长（分钟）  请输入数字">
+          <el-input type="number" v-model="teachplanEditActive.timelength" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="排序字段">
+          <el-input v-model="teachplanEditActive.orderby" auto-complete="off"></el-input>
+        </el-form-item>
+        <el-form-item label="章节/课时介绍" prop="description">
+          <el-input type="textarea" v-model="teachplanEditActive.description"></el-input>
+        </el-form-item>
+
+        <el-form-item label="状态" prop="status">
+          <el-radio-group v-model="teachplanEditActive.status">
+            <el-radio class="radio" label="0">未发布</el-radio>
+            <el-radio class="radio" label='1'>已发布</el-radio>
+          </el-radio-group>
+        </el-form-item>
+        <el-form-item>
+          <el-button type="primary" v-on:click="editTeachplan">提交</el-button>
+          <el-button type="primary" v-on:click="resetForm">重置</el-button>
+        </el-form-item>
+
+      </el-form>
+    </el-dialog>
+
     <el-dialog title="选择媒资文件" :visible.sync="mediaFormVisible">
       <media-list v-bind:ischoose="true" @choosemedia="choosemedia"></media-list>
     </el-dialog>
@@ -76,6 +124,7 @@
       return {
         mediaFormVisible: false,
         teachplayFormVisible: false,//控制添加窗口是否显示
+        teachplayEditFormVisible:false,
         teachplanList: [{
           id: 1,
           pname: '一级 1',
@@ -104,6 +153,7 @@
           ]
         },
         teachplanActive: {},
+        teachplanEditActive: {},
         teachplanId: ''
       }
     },
@@ -159,6 +209,28 @@
           }
         })
       },
+      editTeachplan() {
+        //校验表单
+        this.$refs.teachplanEditForm.validate((valid) => {
+          if (valid) {
+            //调用api方法
+            //将课程id设置到teachplanActive
+            this.teachplanEditActive.courseid = this.courseid
+            courseApi.editTeachplan(this.teachplanEditActive.id,this.teachplanEditActive).then(res => {
+              if (res.success) {
+                this.$message.success("修改成功")
+                //关闭表单
+                this.teachplayEditFormVisible = false
+                //刷新树
+                this.findTeachplan()
+              } else {
+                this.$message.error(res.message)
+              }
+
+            })
+          }
+        })
+      },
       //重置表单
       resetForm() {
         this.teachplanActive = {}
@@ -173,6 +245,14 @@
 
       },
       edit(data) {
+        this.teachplayEditFormVisible = true
+        courseApi.findTeachplan(data.id).then(res=>{
+           if(res){
+             this.teachplanEditActive = res;
+           }else {
+             this.$.message.error("数据异常");
+           }
+        })
         //alert(data.id);
       },
       remove(node, data) {
@@ -180,7 +260,13 @@
         const children = parent.data.children || parent.data;
         const index = children.findIndex(d => d.id === data.id);
         children.splice(index, 1);
-
+        courseApi.deleteTeachplan(data.id).then(res=>{
+            if(res.success){
+                this.$message.info("删除成功");
+            }else {
+                this.$message.error("数据异常");
+            }
+        })
       },
       renderContent(h, {node, data, store}) {
         return (

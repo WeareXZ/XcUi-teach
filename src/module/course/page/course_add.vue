@@ -34,6 +34,7 @@
     </el-form>
     <div slot="footer" class="dialog-footer">
       <el-button type="primary"  @click.native="save" >提交</el-button>
+      <el-button  @click.native="go_back" >返回</el-button>
     </div>
   </div>
 </template>
@@ -52,6 +53,10 @@
           value: 'id',
           label:'name',
           children:'children'
+        },
+        goback_params:{
+          page:this.$route.query.page,
+          name:this.$route.query.name
         },
         categoryList: [],
         categoryActive:[],
@@ -109,6 +114,11 @@
             })
           }
         })
+    },
+    go_back: function () {
+      this.$router.push({ path: '/course/list', query:{
+          page: this.goback_params.page,
+          name: this.goback_params.name}})
     }
   },
     created(){
